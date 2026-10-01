@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Habla con el adolescente — Práctica guiada UF1842 · IFCD0210</title>
+<meta name="description" content="Práctica guiada de la UF1842: construye paso a paso un adolescente que contesta con monosílabos. Lee lo que escribe el usuario, detecta con endsWith y toUpperCase si es una pregunta, un grito o una pregunta gritada, y elige la respuesta con if / else if. Incluye demo con el código en vivo, guion de 8 pasos y retos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&amp;family=Atkinson+Hyperlegible:wght@400;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+    --papel: #FBFCF7;
+    --cuadricula: #DDE9F4;
+    --tinta: #1D2744;
+    --tinta-suave: #4B5675;
+    --rollo: #B5400A;
+    --rollo-suave: #FFE8D6;
+    --rotulador: #FFD84D;
+    --codigo-fondo: #1D2744;
+    --codigo-texto: #E6EAF5;
+    --codigo-comentario: #8F9BBE;
+    --codigo-clave: #FFB86B;
+    --codigo-cadena: #9EE6A8;
+    --borde: #1D2744;
+    --tarjeta: #FFFFFF;
+    --ok: #2F8F4E;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --papel: #131A2B;
+      --cuadricula: #1E2842;
+      --tinta: #E8ECF7;
+      --tinta-suave: #A9B3CF;
+      --codigo-fondo: #0B1020;
+      --borde: #E8ECF7;
+      --tarjeta: #1A2338;
+      --ok: #5FD483;
+      --rollo: #FFB27A;
+      --rollo-suave: #3D2414;
+    }
+  }
+  :root[data-theme="dark"] {
+    --papel: #131A2B;
+    --cuadricula: #1E2842;
+    --tinta: #E8ECF7;
+    --tinta-suave: #A9B3CF;
+    --codigo-fondo: #0B1020;
+    --borde: #E8ECF7;
+    --tarjeta: #1A2338;
+    --ok: #5FD483;
+    --rollo: #FFB27A;
+    --rollo-suave: #3D2414;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background-color: var(--papel);
+    background-image:
+      linear-gradient(var(--cuadricula) 1px, transparent 1px),
+      linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--tinta);
+    font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  main { max-width: 1040px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  h1, h2, h3 { font-family: "Baloo 2", "Trebuchet MS", sans-serif; line-height: 1.1; margin: 0; }
+  h1 { font-size: clamp(2.4rem, 7vw, 4.25rem); font-weight: 800; letter-spacing: -0.01em; }
+  h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 800; margin-bottom: 0.5rem; }
+  h3 { font-size: 1.35rem; font-weight: 700; }
+  p { margin: 0.5rem 0; max-width: 68ch; }
+  code { font-family: "JetBrains Mono", Consolas, monospace; font-size: 0.92em; background: var(--rotulador); color: #1D2744; padding: 0 0.3em; border-radius: 4px; }
+  .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+  .intro { color: var(--tinta-suave); font-size: 1.2rem; margin-top: 0.75rem; }
+
+  /* ---------- Juego ---------- */
+  .juego {
+    margin-top: 2.25rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+  .mesa {
+    background: var(--tarjeta);
+    border: 2px solid var(--borde);
+    border-radius: 18px;
+    box-shadow: 6px 6px 0 var(--borde);
+    padding: 1.5rem;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .pista { color: var(--tinta-suave); font-size: 0.95rem; margin-top: 0.75rem; }
+
+  .pizarra {
+    background: var(--codigo-fondo);
+    color: var(--codigo-texto);
+    border-radius: 18px;
+    padding: 1.25rem 0 1rem;
+    display: flex; flex-direction: column;
+    min-width: 0;
+  }
+  .pizarra h3 { color: #fff; padding: 0 1.25rem; font-size: 1.15rem; }
+  .pizarra .sub { color: var(--codigo-comentario); padding: 0 1.25rem; font-size: 0.9rem; margin: 0.15rem 0 0.75rem; }
+  .vivo { overflow-x: auto; }
+  .vivo pre { margin: 0; font-family: "JetBrains Mono", Consolas, monospace; font-size: 0.85rem; line-height: 1.75; }
+  .linea { display: block; padding: 0 1.25rem; border-left: 4px solid transparent; transition: background 0.15s, border-color 0.15s; white-space: pre; }
+  .linea.activa { background: rgba(255, 216, 77, 0.18); border-left-color: var(--rotulador); }
+  .variable {
+    margin: 0.9rem 1.25rem 0; padding: 0.6rem 0.9rem;
+    border: 1px dashed var(--codigo-comentario); border-radius: 10px;
+    font-family: "JetBrains Mono", monospace; font-size: 0.9rem;
+  }
+  .variable strong { color: var(--rotulador); overflow-wrap: anywhere; }
+  .c { color: var(--codigo-comentario); }
+  .k { color: var(--codigo-clave); }
+  .s { color: var(--codigo-cadena); }
+
+  /* ---------- Guion ---------- */
+  section { margin-top: 3.5rem; }
+  .cabecera-guion { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; }
+  .progreso { font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 1.1rem; }
+  .barra { height: 12px; width: min(260px, 70vw); border: 2px solid var(--borde); border-radius: 99px; overflow: hidden; margin-top: 0.3rem; }
+  .barra div { height: 100%; width: 0; background: var(--rollo); transition: width 0.3s; }
+
+  ol.pasos { list-style: none; padding: 0; margin: 1.5rem 0 0; counter-reset: paso; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  ol.pasos > li {
+    counter-increment: paso;
+    background: var(--tarjeta);
+    border: 2px solid var(--borde);
+    border-radius: 16px;
+    padding: 1.25rem 1.25rem 1.25rem 4.5rem;
+    position: relative;
+  }
+  ol.pasos > li::before {
+    content: counter(paso);
+    position: absolute; left: 1.1rem; top: 1.1rem;
+    width: 2.4rem; height: 2.4rem; border-radius: 50%;
+    background: var(--rollo); color: var(--tarjeta);
+    font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 1.3rem;
+    display: grid; place-items: center;
+  }
+  ol.pasos > li.hecho::before { content: "✓"; background: var(--ok); }
+  ol.pasos > li.hecho { border-style: dashed; }
+  .archivo { font-size: 0.9rem; color: var(--tinta-suave); margin-top: 0.15rem; }
+  .bloque { position: relative; margin-top: 0.9rem; }
+  .bloque pre {
+    margin: 0; background: var(--codigo-fondo); color: var(--codigo-texto);
+    border-radius: 12px; padding: 1rem 1.1rem; overflow-x: auto;
+    font-family: "JetBrains Mono", Consolas, monospace; font-size: 0.85rem; line-height: 1.65;
+  }
+  .copiar {
+    position: absolute; top: 0.5rem; right: 0.5rem;
+    font: 600 0.8rem "Atkinson Hyperlegible", sans-serif;
+    background: var(--rotulador); color: #1D2744; border: none; border-radius: 6px;
+    padding: 0.3rem 0.6rem; cursor: pointer;
+  }
+  .copiar:focus-visible, .check input:focus-visible + span { outline: 3px solid var(--rollo); outline-offset: 2px; }
+  .check { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.9rem; cursor: pointer; font-weight: 700; }
+  .check input { width: 1.2rem; height: 1.2rem; accent-color: var(--ok); }
+  .ojo { border-left: 4px solid var(--rotulador); padding-left: 0.8rem; margin-top: 0.8rem; color: var(--tinta-suave); }
+
+  .retos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+  .reto { border: 2px dashed var(--borde); border-radius: 14px; padding: 1rem 1.1rem; background: var(--tarjeta); }
+  .reto h3 { font-size: 1.15rem; }
+  .reto p { font-size: 0.97rem; }
+  .nivel { font-size: 0.85rem; color: var(--tinta-suave); }
+
+  @media (max-width: 760px) {
+    .juego { grid-template-columns: minmax(0, 1fr); }
+    ol.pasos > li { padding: 4rem 1rem 1.1rem; }
+    ol.pasos > li::before { left: 1rem; top: 1rem; }
+  }
+
+  /* ---------- Integración con el sitio IFCD0210 ---------- */
+  :root { --fucsia: #A8174F; --fucsia-suave: #FBE4EC; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --fucsia: #FF9CC0; --fucsia-suave: #3A1626; } }
+  :root[data-theme="dark"] { --fucsia: #FF9CC0; --fucsia-suave: #3A1626; }
+  .ruta {
+    background: var(--tarjeta);
+    border-bottom: 2px solid var(--borde);
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 0.82rem;
+  }
+  .ruta ol {
+    max-width: 1040px; margin: 0 auto; padding: 0.7rem 1.25rem;
+    list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
+  }
+  .ruta li + li::before { content: "/"; margin-right: 0.35rem; color: var(--tinta-suave); }
+  .ruta a { color: var(--tinta-suave); text-decoration: none; }
+  .ruta a:hover { color: var(--tinta); text-decoration: underline; }
+  .ruta [aria-current="page"] { color: var(--tinta); font-weight: 600; }
+  .etiqueta-practica {
+    display: inline-block; margin-bottom: 0.75rem;
+    font-family: "JetBrains Mono", Consolas, monospace; font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--fucsia); background: var(--fucsia-suave);
+    border: 2px solid var(--fucsia); border-radius: 99px; padding: 0.15rem 0.7rem;
+  }
+  .repasa { color: var(--tinta-suave); font-size: 0.98rem; }
+  .repasa a, .pie a { color: var(--tinta); font-weight: 700; text-decoration-color: var(--fucsia); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  .repasa a:hover, .pie a:hover { color: var(--fucsia); }
+  .pie {
+    margin-top: 3.5rem; padding-top: 1.25rem; border-top: 2px dashed var(--tinta-suave);
+    display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; font-size: 0.98rem;
+  }
+  .ruta a:focus-visible, .repasa a:focus-visible, .pie a:focus-visible { outline: 3px solid var(--fucsia); outline-offset: 3px; border-radius: 3px; }
+
+  /* ---------- Adolescente de la demo ---------- */
+  .charla { width: 100%; max-width: 360px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+  .bocadillo {
+    position: relative; align-self: stretch; margin: 0 0 1.1rem; max-width: none;
+    min-height: 3.4rem; padding: 0.7rem 1rem;
+    display: grid; place-items: center;
+    background: var(--rollo-suave); color: var(--tinta);
+    border: 2px solid var(--borde); border-radius: 18px;
+    font: 800 1.45rem "Baloo 2", "Trebuchet MS", sans-serif; line-height: 1.15;
+  }
+  .bocadillo::after {
+    content: ""; position: absolute; left: 50%; bottom: -13px;
+    width: 22px; height: 22px; transform: translateX(-50%) rotate(45deg);
+    background: var(--rollo-suave);
+    border-right: 2px solid var(--borde); border-bottom: 2px solid var(--borde);
+  }
+  .bocadillo.nueva { animation: pop 0.25s ease-out; }
+  @keyframes pop { from { transform: scale(0.92); } to { transform: scale(1); } }
+  .ado { width: min(190px, 52vw); height: auto; display: block; }
+  .ado .fondo-ado { fill: #FFE8D6; }
+  .ado .cara { display: none; }
+  .ado[data-cara="aburrido"] .c-aburrido,
+  .ado[data-cara="nada"] .c-nada,
+  .ado[data-cara="duda"] .c-duda,
+  .ado[data-cara="enfado"] .c-enfado,
+  .ado[data-cara="grito"] .c-grito { display: inline; }
+  .etiqueta-frase { align-self: stretch; text-align: left; font-weight: 700; margin-top: 0.9rem; }
+  .fila-frase { align-self: stretch; display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+  .fila-frase input {
+    flex: 1; min-width: 0; font: 1.1rem "Atkinson Hyperlegible", sans-serif;
+    padding: 0.5rem 0.7rem; border: 2px solid var(--borde); border-radius: 10px;
+    background: var(--papel); color: var(--tinta);
+  }
+  .fila-frase input::placeholder { color: var(--tinta-suave); }
+  .fila-frase input:focus-visible { outline: 3px solid var(--rollo); outline-offset: 2px; }
+  .boton-decir {
+    min-height: 48px; padding: 0.4rem 1.1rem; cursor: pointer;
+    font: 800 1.1rem "Baloo 2", "Trebuchet MS", sans-serif;
+    background: var(--rollo); color: var(--tarjeta);
+    border: 2px solid var(--borde); border-radius: 12px; box-shadow: 3px 3px 0 var(--borde);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .boton-decir:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--borde); }
+  .boton-decir:focus-visible, .ejemplo:focus-visible { outline: 3px solid var(--rollo); outline-offset: 3px; }
+  .ejemplos { align-self: stretch; display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.8rem; text-align: left; }
+  .ejemplos-titulo { font-size: 0.9rem; color: var(--tinta-suave); margin-right: 0.15rem; }
+  .ejemplo {
+    font: 600 0.85rem "Atkinson Hyperlegible", sans-serif; cursor: pointer;
+    background: transparent; color: var(--tinta);
+    border: 2px solid var(--borde); border-radius: 99px; padding: 0.15rem 0.65rem;
+  }
+  .ejemplo:hover { background: var(--rollo-suave); }
+  .variables { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+  .ampliacion {
+    display: inline-block; vertical-align: middle; margin-left: 0.4rem;
+    font: 600 0.72rem "JetBrains Mono", Consolas, monospace; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--rollo); border: 2px solid var(--rollo); border-radius: 99px; padding: 0.05rem 0.55rem;
+  }
+  ol.pasos > li.separador-ampliacion {
+    counter-increment: none; background: none; border: none; border-radius: 0;
+    padding: 1rem 0 0; border-top: 2px dashed var(--tinta-suave);
+  }
+  ol.pasos > li.separador-ampliacion::before { content: none; }
+  .separador-ampliacion {
+    list-style: none; margin-top: 0.5rem;
+    font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 1.4rem;
+  }
+  .separador-ampliacion p { font-family: "Atkinson Hyperlegible", sans-serif; font-weight: 400; font-size: 1rem; color: var(--tinta-suave); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .linea, .barra div, .boton-decir { transition: none; }
+    .bocadillo.nueva { animation: none; }
+  }
+</style>
+</head>
+<body>
+<nav class="ruta" aria-label="Ruta de navegación">
+  <ol>
+    <li><a href="index.html">IFCD0210</a></li>
+    <li><a href="index.html#roadmap">MF0491_3</a></li>
+    <li><a href="uf1842.html">UF1842</a></li>
+    <li><span aria-current="page">Práctica: Habla con el adolescente</span></li>
+  </ol>
+</nav>
+<main>
+  <header>
+    <p class="etiqueta-practica">Práctica guiada · UF1842 · 3.ª práctica</p>
+    <h1>Habla con el adolescente</h1>
+    <p class="intro">Le hables como le hables, contesta con lo mínimo. Pero no contesta al azar: se fija en si le preguntas, si le gritas o las dos cosas a la vez. Háblale, mira qué camino sigue el programa y después constrúyelo tú siguiendo el guion.</p>
+    <p class="repasa">Pone en práctica lo visto en la UF1842: <a href="uf1842.html#bloque-b2">B2 · condicionales</a>, <a href="uf1842.html#bloque-b3">B3 · funciones</a>, <a href="uf1842.html#bloque-b7">B7 · manipulación de texto</a>, <a href="uf1842.html#bloque-c1">C1 · el DOM</a> y <a href="uf1842.html#bloque-c2">C2 · eventos</a>.</p>
+  </header>
+
+  <!-- ===== Demo del adolescente ===== -->
+  <div class="juego">
+    <div class="mesa">
+      <div class="charla">
+        <p class="bocadillo" id="respuesta" aria-live="polite">…</p>
+        <svg class="ado" id="ado" data-cara="aburrido" viewBox="0 0 200 220" role="img" aria-label="Un adolescente con cara de aburrimiento y unos cascos al cuello">
+  <circle class="fondo-ado" cx="100" cy="116" r="98"/>
+  <path d="M28 220 C30 172 62 152 100 152 C138 152 170 172 172 220 Z" fill="#3F6B5B"/>
+  <path d="M84 152 L100 178 L116 152" fill="none" stroke="#2B4D41" stroke-width="5"/>
+  <rect x="88" y="126" width="24" height="30" fill="#E2A97E"/>
+  <path d="M60 158 C60 126 140 126 140 158" fill="none" stroke="#1D2744" stroke-width="7" stroke-linecap="round"/>
+  <rect x="50" y="146" width="18" height="26" rx="7" fill="#1D2744"/>
+  <rect x="132" y="146" width="18" height="26" rx="7" fill="#1D2744"/>
+  <circle cx="56" cy="92" r="9" fill="#E2A97E"/>
+  <circle cx="144" cy="92" r="9" fill="#E2A97E"/>
+  <ellipse cx="100" cy="88" rx="44" ry="50" fill="#F2C9A0"/>
+  <path d="M54 84 C48 40 80 26 104 28 C134 28 154 48 146 84 C140 68 128 60 116 58 C106 74 82 78 64 70 C60 74 56 78 54 84 Z" fill="#3B2A20"/>
+  <path d="M75 94 A7 7 0 0 0 89 94 Z" fill="#1D2744"/>
+  <path d="M111 94 A7 7 0 0 0 125 94 Z" fill="#1D2744"/>
+  <path d="M73 94 H91 M109 94 H127" stroke="#1D2744" stroke-width="3" stroke-linecap="round"/>
+  <g fill="none" stroke="#1D2744" stroke-width="3" stroke-linecap="round">
+    <path class="cara c-aburrido c-nada" d="M90 118 Q100 115 110 118"/>
+    <path class="cara c-duda" d="M89 119 Q99 119 111 113"/>
+    <path class="cara c-duda" d="M109 80 Q118 74 127 80"/>
+    <path class="cara c-enfado c-grito" d="M73 80 L90 86 M127 80 L110 86"/>
+  </g>
+  <ellipse class="cara c-enfado" cx="100" cy="119" rx="7" ry="5" fill="#7A2E1F"/>
+  <ellipse class="cara c-grito" cx="100" cy="120" rx="11" ry="9" fill="#7A2E1F"/>
+  <text class="cara c-nada" x="150" y="52" font-family="Baloo 2, sans-serif" font-weight="800" font-size="22" fill="#1D2744">z</text>
+  <text class="cara c-nada" x="162" y="36" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16" fill="#1D2744">z</text>
+</svg>
+        <label class="etiqueta-frase" for="frase">Dile algo</label>
+        <div class="fila-frase">
+          <input type="text" id="frase" autocomplete="off" placeholder="¿Has recogido tu cuarto?">
+          <button type="button" class="boton-decir" id="decir">Decir</button>
+        </div>
+        <div class="ejemplos" role="group" aria-label="Frases de ejemplo">
+          <span class="ejemplos-titulo">Prueba con:</span>
+          <button type="button" class="ejemplo" data-frase="¿Has hecho los deberes?">una pregunta</button>
+          <button type="button" class="ejemplo" data-frase="BAJA EL VOLUMEN">un grito</button>
+          <button type="button" class="ejemplo" data-frase="¿ME ESTÁS ESCUCHANDO?">una pregunta gritada</button>
+          <button type="button" class="ejemplo" data-frase="Hoy cenamos lentejas.">otra cosa</button>
+          <button type="button" class="ejemplo" data-frase="   ">nada</button>
+        </div>
+      </div>
+      <p class="pista">Prueba también «¿Vienes? » con un espacio al final, «OK» o «1234». Pulsa Enter para hablar sin usar el ratón.</p>
+    </div>
+
+    <div class="pizarra" aria-label="Código que se ejecuta al hablarle">
+      <h3>Lo que ocurre en el código</h3>
+      <p class="sub">Al hablarle se iluminan, en orden, solo las líneas que se ejecutan. Cada tipo de frase sigue un camino distinto por la cadena de <span class="mono">if</span>.</p>
+      <div class="vivo">
+<pre><span class="linea" data-l="0"><span class="k">function</span> contestar() {</span><span class="linea" data-l="1">  <span class="k">const</span> frase = casilla.value.trim();</span><span class="linea" data-l="2">  <span class="k">const</span> esPregunta = frase.endsWith(<span class="s">"?"</span>);</span><span class="linea" data-l="3">  <span class="k">const</span> esGrito = frase === frase.toUpperCase() &amp;&amp;</span><span class="linea" data-l="3">                  frase !== frase.toLowerCase();</span><span class="linea" data-l="4">  <span class="k">if</span> (frase === <span class="s">""</span>) {</span><span class="linea" data-l="5">    respuesta.textContent = <span class="s">"Vale, pues nada."</span>;</span><span class="linea" data-l="6">  } <span class="k">else</span> <span class="k">if</span> (esPregunta &amp;&amp; esGrito) {</span><span class="linea" data-l="7">    respuesta.textContent = <span class="s">"¡Que sí, que ya voy!"</span>;</span><span class="linea" data-l="8">  } <span class="k">else</span> <span class="k">if</span> (esGrito) {</span><span class="linea" data-l="9">    respuesta.textContent = <span class="s">"¡Relájate!"</span>;</span><span class="linea" data-l="10">  } <span class="k">else</span> <span class="k">if</span> (esPregunta) {</span><span class="linea" data-l="11">    respuesta.textContent = <span class="s">"Ni idea."</span>;</span><span class="linea" data-l="12">  } <span class="k">else</span> {</span><span class="linea" data-l="13">    respuesta.textContent = <span class="s">"Lo que tú digas."</span>;</span><span class="linea">  }</span><span class="linea">}</span></pre>
+      </div>
+      <div class="variable variables">
+        <span>frase → <strong id="vFrase">—</strong></span>
+        <span>esPregunta → <strong id="vPregunta">—</strong></span>
+        <span>esGrito → <strong id="vGrito">—</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Guion de tareas ===== -->
+  <section aria-labelledby="t-guion">
+    <div class="cabecera-guion">
+      <div>
+        <h2 id="t-guion">Guion de tareas</h2>
+        <p>Vas a crear cuatro archivos en una misma carpeta: <code>index.html</code>, <code>estilos.css</code>, <code>adolescente.js</code> y la imagen <code>adolescente.svg</code>. Los pasos 1 a 6 construyen al adolescente con sus cuatro respuestas; los pasos 7 y 8 son la ampliación. Marca cada paso cuando lo termines.</p>
+      </div>
+      <div class="progreso">
+        <span id="textoProgreso">0 de 8 pasos</span>
+        <div class="barra" aria-hidden="true"><div id="relleno"></div></div>
+      </div>
+    </div>
+
+    <ol class="pasos" id="pasos">
+      <li data-paso="1">
+        <h3>Prepara la carpeta y la imagen</h3>
+        <p class="archivo">Carpeta: adolescente/ · Archivo: adolescente.svg</p>
+        <p>Crea una carpeta llamada <code>adolescente</code> y ábrela con tu editor (por ejemplo, Visual Studio Code). Dentro crea <code>index.html</code>, <code>estilos.css</code> y <code>adolescente.js</code> vacíos.</p>
+        <p>Falta la imagen. Crea un cuarto archivo, <code>adolescente.svg</code>, y pega este dibujo. Un SVG es una imagen escrita con etiquetas, como el HTML: cada <code>path</code>, <code>rect</code> o <code>circle</code> es una pieza del dibujo.</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre>&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220"&gt;
+  &lt;!-- Sudadera --&gt;
+  &lt;path d="M28 220 C30 172 62 152 100 152 C138 152 170 172 172 220 Z" fill="#3F6B5B"/&gt;
+  &lt;path d="M84 152 L100 178 L116 152" fill="none" stroke="#2B4D41" stroke-width="5"/&gt;
+  &lt;!-- Cuello --&gt;
+  &lt;rect x="88" y="126" width="24" height="30" fill="#E2A97E"/&gt;
+  &lt;!-- Cascos colgados del cuello --&gt;
+  &lt;path d="M60 158 C60 126 140 126 140 158" fill="none" stroke="#1D2744" stroke-width="7" stroke-linecap="round"/&gt;
+  &lt;rect x="50" y="146" width="18" height="26" rx="7" fill="#1D2744"/&gt;
+  &lt;rect x="132" y="146" width="18" height="26" rx="7" fill="#1D2744"/&gt;
+  &lt;!-- Orejas y cabeza --&gt;
+  &lt;circle cx="56" cy="92" r="9" fill="#E2A97E"/&gt;
+  &lt;circle cx="144" cy="92" r="9" fill="#E2A97E"/&gt;
+  &lt;ellipse cx="100" cy="88" rx="44" ry="50" fill="#F2C9A0"/&gt;
+  &lt;!-- Pelo con flequillo --&gt;
+  &lt;path d="M54 84 C48 40 80 26 104 28 C134 28 154 48 146 84 C140 68 128 60 116 58 C106 74 82 78 64 70 C60 74 56 78 54 84 Z" fill="#3B2A20"/&gt;
+  &lt;!-- Ojos medio cerrados --&gt;
+  &lt;path d="M75 94 A7 7 0 0 0 89 94 Z" fill="#1D2744"/&gt;
+  &lt;path d="M111 94 A7 7 0 0 0 125 94 Z" fill="#1D2744"/&gt;
+  &lt;path d="M73 94 H91 M109 94 H127" stroke="#1D2744" stroke-width="3" stroke-linecap="round"/&gt;
+  &lt;!-- Boca aburrida --&gt;
+  &lt;path d="M90 118 Q100 115 110 118" fill="none" stroke="#1D2744" stroke-width="3" stroke-linecap="round"/&gt;
+&lt;/svg&gt;</pre></div>
+        <p class="ojo">Si prefieres usar tu propia imagen (un dibujo tuyo o una imagen con licencia libre), guárdala en la carpeta y usa su nombre en el paso 2 en lugar de <code>adolescente.svg</code>.</p>
+        <label class="check"><input type="checkbox"><span>Terminado</span></label>
+      </li>
+
+      <li data-paso="2">
+        <h3>Escribe el HTML: el bocadillo, la imagen y la casilla</h3>
+        <p class="archivo">Archivo: index.html</p>
+        <p>El párrafo <code>#respuesta</code> será el bocadillo donde contesta el adolescente. Debajo van la imagen, una casilla de texto con su <code>&lt;label&gt;</code> y el botón «Decir». Todo lo que vamos a usar desde JavaScript lleva un <code>id</code>.</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;Habla con el adolescente&lt;/title&gt;
+  &lt;link rel="stylesheet" href="estilos.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Habla con el adolescente&lt;/h1&gt;
+
+  &lt;p id="respuesta" aria-live="polite"&gt;…&lt;/p&gt;
+  &lt;img src="adolescente.svg" alt="Un adolescente con cara de aburrimiento y unos cascos al cuello" width="200" height="220"&gt;
+
+  &lt;label for="frase"&gt;Dile algo&lt;/label&gt;
+  &lt;input type="text" id="frase" autocomplete="off"&gt;
+  &lt;button id="decir"&gt;Decir&lt;/button&gt;
+
+  &lt;script src="adolescente.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre></div>
+        <p class="ojo">El <code>alt</code> de la imagen describe lo que se ve para quien no puede verla. El atributo <code>aria-live="polite"</code> hace que un lector de pantalla lea cada respuesta nueva (lo verás en la UF1843).</p>
+        <label class="check"><input type="checkbox"><span>Terminado</span></label>
+      </li>
+
+      <li data-paso="3">
+        <h3>Dale estilo con CSS</h3>
+        <p class="archivo">Archivo: estilos.css</p>
+        <p>Centramos todo, convertimos la respuesta en un bocadillo con fondo y bordes redondeados, y hacemos que la casilla y el botón ocupen todo el ancho.</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre>body {
+  font-family: sans-serif;
+  max-width: 420px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+#respuesta {
+  background: #FFEDD5;
+  border: 2px solid #1D2744;
+  border-radius: 16px;
+  padding: 0.8rem 1rem;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+img {
+  display: block;
+  margin: 0 auto 1rem;
+}
+
+label {
+  display: block;
+  text-align: left;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1.2rem;
+  padding: 0.4rem;
+}
+
+button {
+  width: 100%;
+  margin-top: 0.6rem;
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  cursor: pointer;
+}</pre></div>
+        <label class="check"><input type="checkbox"><span>Terminado</span></label>
+      </li>
+
+      <li data-paso="4">
+        <h3>Busca los elementos y haz que conteste algo</h3>
+        <p class="archivo">Archivo: adolescente.js</p>
+        <p>Guardamos en constantes la casilla, el botón y el bocadillo. Al hacer click en «Decir» leemos lo escrito con <code>.value</code> y, de momento, el adolescente contesta siempre lo mismo. El <code>console.log</code> te deja ver en la consola qué ha leído el programa.</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre><span class="c">// 1. Buscamos los elementos de la página</span>
+<span class="k">const</span> casilla = document.getElementById(<span class="s">"frase"</span>);
+<span class="k">const</span> botonDecir = document.getElementById(<span class="s">"decir"</span>);
+<span class="k">const</span> respuesta = document.getElementById(<span class="s">"respuesta"</span>);
+
+<span class="c">// 2. Qué pasa al pulsar «Decir»</span>
+botonDecir.addEventListener(<span class="s">"click"</span>, <span class="k">function</span> () {
+  <span class="k">const</span> frase = casilla.value;
+  console.log(<span class="s">"Me has dicho: "</span> + frase);
+  respuesta.textContent = <span class="s">"Lo que tú digas."</span>;
+});</pre></div>
+        <p class="ojo">Guarda, abre <code>index.html</code> en el navegador, escribe cualquier cosa y pulsa «Decir». Pulsa F12 y mira la pestaña Consola: ahí aparece tu frase.</p>
+        <label class="check"><input type="checkbox"><span>Terminado</span></label>
+      </li>
+
+      <li data-paso="5">
+        <h3>Reconoce las preguntas</h3>
+        <p class="archivo">Archivo: adolescente.js (cambia el bloque del click)</p>
+        <p>Una frase es una pregunta si termina con <code>?</code>. El método <code>endsWith("?")</code> lo comprueba y devuelve <code>true</code> o <code>false</code>. Guardamos ese resultado en <code>esPregunta</code> y con un <code>if / else</code> elegimos la respuesta. Sustituye el bloque del click por este:</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre>botonDecir.addEventListener(<span class="s">"click"</span>, <span class="k">function</span> () {
+  <span class="k">const</span> frase = casilla.value;
+  <span class="k">const</span> esPregunta = frase.endsWith(<span class="s">"?"</span>);
+
+  <span class="k">if</span> (esPregunta) {
+    respuesta.textContent = <span class="s">"Ni idea."</span>;
+  } <span class="k">else</span> {
+    respuesta.textContent = <span class="s">"Lo que tú digas."</span>;
+  }
+});</pre></div>
+        <p class="ojo">Solo cuenta el signo del final: el <code>¿</code> del principio no hace falta para el programa. Prueba en la consola <code>"¿Vienes?".endsWith("?")</code> y <code>"Vienes".endsWith("?")</code>.</p>
+        <label class="check"><input type="checkbox"><span>Terminado</span></label>
+      </li>
+
+      <li data-paso="6">
+        <h3>Reconoce los gritos y las preguntas gritadas</h3>
+        <p class="archivo">Archivo: adolescente.js (archivo completo)</p>
+        <p>Una frase está gritada si pasarla a mayúsculas no la cambia: <code>frase === frase.toUpperCase()</code>. Pero eso también es cierto para «1234» o «?», que no tienen letras. Por eso pedimos una segunda condición con <code>&amp;&amp;</code> («y»): que la frase sí cambie al pasarla a minúsculas, es decir, que tenga alguna letra.</p>
+        <p>Con dos comprobaciones hay cuatro casos, y se resuelven con una cadena de <code>else if</code>. Este es el archivo <code>adolescente.js</code> completo:</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre><span class="c">// 1. Buscamos los elementos de la página</span>
+<span class="k">const</span> casilla = document.getElementById(<span class="s">"frase"</span>);
+<span class="k">const</span> botonDecir = document.getElementById(<span class="s">"decir"</span>);
+<span class="k">const</span> respuesta = document.getElementById(<span class="s">"respuesta"</span>);
+
+<span class="c">// 2. Qué pasa al pulsar «Decir»</span>
+botonDecir.addEventListener(<span class="s">"click"</span>, <span class="k">function</span> () {
+  <span class="k">const</span> frase = casilla.value;
+  <span class="k">const</span> esPregunta = frase.endsWith(<span class="s">"?"</span>);
+  <span class="k">const</span> esGrito = frase === frase.toUpperCase() &amp;&amp; frase !== frase.toLowerCase();
+
+  <span class="k">if</span> (esPregunta &amp;&amp; esGrito) {
+    respuesta.textContent = <span class="s">"¡Que sí, que ya voy!"</span>;
+  } <span class="k">else</span> <span class="k">if</span> (esGrito) {
+    respuesta.textContent = <span class="s">"¡Relájate!"</span>;
+  } <span class="k">else</span> <span class="k">if</span> (esPregunta) {
+    respuesta.textContent = <span class="s">"Ni idea."</span>;
+  } <span class="k">else</span> {
+    respuesta.textContent = <span class="s">"Lo que tú digas."</span>;
+  }
+});</pre></div>
+        <p class="ojo">El orden importa. JavaScript entra en el <strong>primer</strong> <code>if</code> que se cumple y se salta el resto. Si comprobaras <code>esGrito</code> antes que <code>esPregunta &amp;&amp; esGrito</code>, una pregunta gritada entraría por el grito y nunca oirías «¡Que sí, que ya voy!». Haz la prueba cambiando el orden.</p>
+        <p class="ojo"><code>toUpperCase()</code> no cambia la frase original: devuelve una copia en mayúsculas. Funciona también con la ñ y las tildes: <code>"¿ESTÁS?" === "¿estás?".toUpperCase()</code> da <code>true</code>.</p>
+        <p class="ojo">Ahora pulsa «Decir» con la casilla vacía, o escribe «¿Vienes? » con un espacio al final. En los dos casos contesta «Lo que tú digas.». Lo arreglamos en la ampliación.</p>
+        <label class="check"><input type="checkbox"><span>Terminado</span></label>
+      </li>
+
+      <li class="separador-ampliacion">
+        Ampliación
+        <p>El adolescente ya contesta, pero se lía con los espacios y no sabe qué hacer cuando no le dices nada. Además, hablar con él obliga a ir al ratón cada vez.</p>
+      </li>
+
+      <li data-paso="7">
+        <h3>Quita los espacios y responde al silencio <span class="ampliacion">Ampliación</span></h3>
+        <p class="archivo">Archivo: adolescente.js</p>
+        <p>El método <code>trim()</code> quita los espacios del principio y del final de un texto. Con él, «¿Vienes? » se queda en «¿Vienes?», y una casilla con solo espacios se queda en <code>""</code>, el texto vacío. Cambia la línea que lee la casilla:</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre>  <span class="k">const</span> frase = casilla.value.trim();</pre></div>
+        <p>Después añade el silencio como <strong>primer</strong> caso de la cadena, porque si no hay frase no tiene sentido preguntarse si es una pregunta. Así queda el archivo completo:</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre><span class="c">// 1. Buscamos los elementos de la página</span>
+<span class="k">const</span> casilla = document.getElementById(<span class="s">"frase"</span>);
+<span class="k">const</span> botonDecir = document.getElementById(<span class="s">"decir"</span>);
+<span class="k">const</span> respuesta = document.getElementById(<span class="s">"respuesta"</span>);
+
+<span class="c">// 2. Qué pasa al pulsar «Decir»</span>
+botonDecir.addEventListener(<span class="s">"click"</span>, <span class="k">function</span> () {
+  <span class="k">const</span> frase = casilla.value.trim();
+  <span class="k">const</span> esPregunta = frase.endsWith(<span class="s">"?"</span>);
+  <span class="k">const</span> esGrito = frase === frase.toUpperCase() &amp;&amp; frase !== frase.toLowerCase();
+
+  <span class="k">if</span> (frase === <span class="s">""</span>) {
+    respuesta.textContent = <span class="s">"Vale, pues nada."</span>;
+  } <span class="k">else</span> <span class="k">if</span> (esPregunta &amp;&amp; esGrito) {
+    respuesta.textContent = <span class="s">"¡Que sí, que ya voy!"</span>;
+  } <span class="k">else</span> <span class="k">if</span> (esGrito) {
+    respuesta.textContent = <span class="s">"¡Relájate!"</span>;
+  } <span class="k">else</span> <span class="k">if</span> (esPregunta) {
+    respuesta.textContent = <span class="s">"Ni idea."</span>;
+  } <span class="k">else</span> {
+    respuesta.textContent = <span class="s">"Lo que tú digas."</span>;
+  }
+});</pre></div>
+        <p class="ojo">Compruébalo: casilla vacía, casilla con espacios y «¿Vienes? » con espacio. Las tres deben dar la respuesta correcta.</p>
+        <label class="check"><input type="checkbox"><span>Terminado</span></label>
+      </li>
+
+      <li data-paso="8">
+        <h3>Háblale con la tecla Enter <span class="ampliacion">Ampliación</span></h3>
+        <p class="archivo">Archivo: adolescente.js</p>
+        <p>Queremos que conteste tanto al pulsar «Decir» como al pulsar Enter dentro de la casilla. Para no escribir el mismo código dos veces, lo sacamos a una función con nombre, <code>contestar</code>, y la usamos en los dos eventos. El evento <code>keydown</code> salta con cada tecla, y <code>evento.key</code> dice cuál ha sido.</p>
+        <p>Al final de <code>contestar</code>, <code>casilla.select()</code> selecciona lo que escribiste: sigue viéndose, pero en cuanto tecleas algo nuevo se sustituye. Este es el archivo final:</p>
+        <div class="bloque"><button class="copiar">Copiar</button><pre><span class="c">// 1. Buscamos los elementos de la página</span>
+<span class="k">const</span> casilla = document.getElementById(<span class="s">"frase"</span>);
+<span class="k">const</span> botonDecir = document.getElementById(<span class="s">"decir"</span>);
+<span class="k">const</span> respuesta = document.getElementById(<span class="s">"respuesta"</span>);
+
+<span class="c">// 2. Lee la frase y elige la respuesta</span>
+<span class="k">function</span> contestar() {
+  <span class="k">const</span> frase = casilla.value.trim();
+  <span class="k">const</span> esPregunta = frase.endsWith(<span class="s">"?"</span>);
+  <span class="k">const</span> esGrito = frase === frase.toUpperCase() &amp;&amp; frase !== frase.toLowerCase();
+
+  <span class="k">if</span> (frase === <span class="s">""</span>) {
+    respuesta.textContent = <span class="s">"Vale, pues nada."</span>;
+  } <span class="k">else</span> <span class="k">if</span> (esPregunta &amp;&amp; esGrito) {
+    respuesta.textContent = <span class="s">"¡Que sí, que ya voy!"</span>;
+  } <span class="k">else</span> <span class="k">if</span> (esGrito) {
+    respuesta.textContent = <span class="s">"¡Relájate!"</span>;
+  } <span class="k">else</span> <span class="k">if</span> (esPregunta) {
+    respuesta.textContent = <span class="s">"Ni idea."</span>;
+  } <span class="k">else</span> {
+    respuesta.textContent = <span class="s">"Lo que tú digas."</span>;
+  }
+
+  casilla.select();
+}
+
+<span class="c">// 3. Contesta al pulsar «Decir» o la tecla Enter</span>
+botonDecir.addEventListener(<span class="s">"click"</span>, contestar);
+
+casilla.addEventListener(<span class="s">"keydown"</span>, <span class="k">function</span> (evento) {
+  <span class="k">if</span> (evento.key === <span class="s">"Enter"</span>) {
+    contestar();
+  }
+});</pre></div>
+        <p class="ojo">Fíjate en <code>addEventListener("click", contestar)</code>: va <strong>sin paréntesis</strong>. Le damos la función para que la ejecute cuando llegue el click. Con <code>contestar()</code> se ejecutaría una vez al cargar la página y el botón no haría nada.</p>
+        <label class="check"><input type="checkbox"><span>Terminado</span></label>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ===== Retos ===== -->
+  <section aria-labelledby="t-retos">
+    <h2 id="t-retos">Retos para quien termine antes</h2>
+    <p>Cada reto se resuelve con lo que ya has usado, más una pieza nueva.</p>
+    <div class="retos">
+      <article class="reto">
+        <h3>Devuelve el saludo</h3>
+        <p class="nivel">Nivel 1 · pieza nueva: <code>includes</code></p>
+        <p>Si la frase contiene «hola», escrita como sea, que conteste «Ey.». Usa <code>frase.toLowerCase().includes("hola")</code>. ¿En qué lugar de la cadena de <code>if</code> lo pones para que «¿HOLA?» siga siendo una pregunta gritada?</p>
+      </article>
+      <article class="reto">
+        <h3>Cambia de cara</h3>
+        <p class="nivel">Nivel 2 · pieza nueva: cambiar <code>src</code></p>
+        <p>Haz una copia de <code>adolescente.svg</code> con otra boca o cejas enfadadas y, cuando le griten, cambia la imagen con <code>imagen.src = "adolescente-enfadado.svg"</code>. Vuelve a la imagen normal en el resto de casos.</p>
+      </article>
+      <article class="reto">
+        <h3>La conversación entera</h3>
+        <p class="nivel">Nivel 2 · pieza nueva: <code>createElement</code> y <code>append</code></p>
+        <p>Añade una lista vacía al HTML y, en cada turno, crea dos elementos <code>li</code>: uno con lo que dijiste y otro con lo que contestó. Así queda el historial de la charla.</p>
+      </article>
+      <article class="reto">
+        <h3>Que no repita siempre lo mismo</h3>
+        <p class="nivel">Nivel 3 · repasa la bola de cristal</p>
+        <p>Cambia cada respuesta por un <em>array</em> de respuestas parecidas («Ni idea.», «Yo qué sé.», «Psé.») y elige una al azar con <code>Math.random()</code>, como en la bola de cristal.</p>
+      </article>
+    </div>
+  </section>
+
+  <footer class="pie">
+    <a href="uf1842.html#tareas">← Volver a las tareas de la UF1842</a>
+    <a href="uf1842-bola.html">← Práctica anterior: La bola de cristal</a>
+    <a href="uf1842-galleta.html">Siguiente práctica: El juego de la galleta →</a>
+    <a href="index.html#roadmap">Itinerario del curso</a>
+  </footer>
+</main>
+
+<script>
+  // ---------- Adolescente (misma lógica que construyen los alumnos) ----------
+  const casilla = document.getElementById("frase");
+  const botonDecir = document.getElementById("decir");
+  const respuesta = document.getElementById("respuesta");
+  const ado = document.getElementById("ado");
+  const vFrase = document.getElementById("vFrase");
+  const vPregunta = document.getElementById("vPregunta");
+  const vGrito = document.getElementById("vGrito");
+  const lineas = document.querySelectorAll(".linea[data-l]");
+  let temporizadores = [];
+
+  function iluminarLineas(orden) {
+    temporizadores.forEach(clearTimeout);
+    temporizadores = [];
+    orden.forEach(function (n, i) {
+      temporizadores.push(setTimeout(function () {
+        lineas.forEach(function (l) { l.classList.toggle("activa", Number(l.dataset.l) === n); });
+      }, i * 160));
+    });
+    temporizadores.push(setTimeout(function () {
+      lineas.forEach(function (l) { l.classList.remove("activa"); });
+    }, orden.length * 160 + 500));
+  }
+
+  function contestar() {
+    const frase = casilla.value.trim();
+    const esPregunta = frase.endsWith("?");
+    const esGrito = frase === frase.toUpperCase() && frase !== frase.toLowerCase();
+    let texto, cara, camino;
+
+    if (frase === "") {
+      texto = "Vale, pues nada."; cara = "nada"; camino = [5];
+    } else if (esPregunta && esGrito) {
+      texto = "¡Que sí, que ya voy!"; cara = "grito"; camino = [6, 7];
+    } else if (esGrito) {
+      texto = "¡Relájate!"; cara = "enfado"; camino = [6, 8, 9];
+    } else if (esPregunta) {
+      texto = "Ni idea."; cara = "duda"; camino = [6, 8, 10, 11];
+    } else {
+      texto = "Lo que tú digas."; cara = "aburrido"; camino = [6, 8, 10, 12, 13];
+    }
+
+    respuesta.textContent = texto;
+    respuesta.classList.remove("nueva");
+    void respuesta.offsetWidth;
+    respuesta.classList.add("nueva");
+    ado.dataset.cara = cara;
+
+    vFrase.textContent = JSON.stringify(frase);
+    vPregunta.textContent = esPregunta;
+    vGrito.textContent = esGrito;
+    iluminarLineas([0, 1, 2, 3, 4].concat(camino));
+    casilla.select();
+  }
+
+  botonDecir.addEventListener("click", contestar);
+  casilla.addEventListener("keydown", function (evento) {
+    if (evento.key === "Enter") {
+      contestar();
+    }
+  });
+  document.querySelectorAll(".ejemplo").forEach(function (boton) {
+    boton.addEventListener("click", function () {
+      casilla.value = boton.dataset.frase;
+      contestar();
+    });
+  });
+
+  // ---------- Botones de copiar ----------
+  document.querySelectorAll(".copiar").forEach(function (boton) {
+    boton.addEventListener("click", async function () {
+      const texto = boton.nextElementSibling.innerText;
+      try {
+        await navigator.clipboard.writeText(texto);
+        boton.textContent = "Copiado";
+      } catch (e) {
+        const rango = document.createRange();
+        rango.selectNodeContents(boton.nextElementSibling);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(rango);
+        boton.textContent = "Seleccionado: pulsa Ctrl+C";
+      }
+      setTimeout(function () { boton.textContent = "Copiar"; }, 1800);
+    });
+  });
+
+  // ---------- Progreso del guion ----------
+  const pasos = document.querySelectorAll("#pasos > li[data-paso]");
+  const textoProgreso = document.getElementById("textoProgreso");
+  const relleno = document.getElementById("relleno");
+  let guardado = [];
+  try { guardado = JSON.parse(localStorage.getItem("uf1842-adolescente-pasos") || "[]"); } catch (e) { guardado = []; }
+
+  function actualizarProgreso() {
+    const hechos = [];
+    pasos.forEach(function (li) {
+      const marca = li.querySelector("input");
+      li.classList.toggle("hecho", marca.checked);
+      if (marca.checked) hechos.push(li.dataset.paso);
+    });
+    textoProgreso.textContent = hechos.length + " de " + pasos.length + " pasos";
+    relleno.style.width = (hechos.length / pasos.length * 100) + "%";
+    try { localStorage.setItem("uf1842-adolescente-pasos", JSON.stringify(hechos)); } catch (e) {}
+  }
+
+  pasos.forEach(function (li) {
+    const marca = li.querySelector("input");
+    marca.checked = guardado.includes(li.dataset.paso);
+    marca.addEventListener("change", actualizarProgreso);
+  });
+  actualizarProgreso();
+</script>
+</body>
+</html>
