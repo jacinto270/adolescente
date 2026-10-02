@@ -9,18 +9,18 @@ botonDdecir.addEventListener("click", function (){
     const esGrito = frase === frase.toUpperCase() && frase !== frase.toLowerCase()
 
     if(esPpregunta && esGrito){
-        respuesta.textContent = "¡Que si que ya voyyy!";
+        respuesta.textContent = "¡Que si que ya voy Noa!";
         imagen.src = "img/agobiado.png"
     }else if(esGrito){
-        respuesta.textContent = "lo que tu digas.";
+        respuesta.textContent = "Noa lo que tu digas.";
         imagen.src = "img/enfadado.png"
     }else if(frase === ""){
-        respuesta.textContent = "Antonia ve mas lento";
+        respuesta.textContent = "¿que dices Noa?";
         imagen.src = "img/agobiado.png"
     }else if (esPpregunta) {
-        respuesta.textContent = "¿que dices?"
+        respuesta.textContent = "¿que quieres Noa?"
         imagen.src = "img/contento.png"
     }else {
-        respuesta.textContent = "lo que tu digas Antonia"
+        respuesta.textContent = "lo que tu digas Pamela"
     }
 });
