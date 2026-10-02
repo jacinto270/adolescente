@@ -3,8 +3,8 @@ const botonDdecir = document.getElementById("decir");
 const respuesta = document.getElementById("respuesta");
 const imagen = document.getElementById("imagen")
 
-botonDdecir.addEventListener("click", function (){
-    const frase = casilla.value.trim();
+const contestar = () =>{
+     const frase = casilla.value.trim();
     const esPpregunta = frase.endsWith("?")
     const esGrito = frase === frase.toUpperCase() && frase !== frase.toLowerCase()
 
@@ -23,4 +23,12 @@ botonDdecir.addEventListener("click", function (){
     }else {
         respuesta.textContent = "lo que tu digas Pamela"
     }
-});
+}
+botonDdecir.addEventListener("click", contestar)
+
+casilla.addEventListener('keydown' ,(Event)=>{
+    console.log(Event)
+    if(Event.key === "Enter"){
+        contestar()
+      }
+})
